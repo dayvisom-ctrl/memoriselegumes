@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memorize os Códigos dos Legumes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        .keyboard {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .keyboard button {
+            padding: 15px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        #display {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .red { background-color: red; color: white; }
+        .orange { background-color: orange; color: white; }
+        .green { background-color: green; color: white; }
+
+        h1, h2 {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Quiz dos Códigos dos Legumes</h1>
+    <h2 id="legume"></h2>
+    <p id="message"></p>
+    <p>Pontuação: <span id="score">0</span></p>
+    <p>Tentativas restantes: <span id="attempts">3</span></p>
+
+    <!-- Display para mostrar o código digitado -->
+    <div id="display">Digite o código:</div>
+
+    <!-- Teclado numérico -->
+    <div class="keyboard">
+        <button onclick="addNumber('1')">1</button>
+        <button onclick="addNumber('2')">2</button>
+        <button onclick="addNumber('3')">3</button>
+        <button onclick="addNumber('4')">4</button>
+        <button onclick="addNumber('5')">5</button>
+        <button onclick="addNumber('6')">6</button>
+        <button onclick="addNumber('7')">7</button>
+        <button onclick="addNumber('8')">8</button>
+        <button onclick="addNumber('9')">9</button>
+        <button onclick="clearDisplay()" class="red">Anula</button>
+        <button onclick="addNumber('0')">0</button>
+        <button onclick="deleteLastNumber()" class="orange">Corrige</button>
+    </div>
+
+    <!-- Botão para confirmar -->
+    <div class="keyboard">
+        <button onclick="checkAnswer()" class="green">Entra</button>
+    </div>
+
+    <script>
+        // Lista de legumes e códigos
+        const legumes = [
+            { nome: "Abacate", codigo: "901" },
+            { nome: "Abacaxi", codigo: "888" },
+            { nome: "Abobrinha", codigo: "17" },
+            { nome: "Alho Agranel", codigo: "6675" },
+            { nome: "Ameixa Fresca", codigo: "1105" },
+            { nome: "Banana Leite", codigo: "5760" },
+            { nome: "Banana Mulata", codigo: "383" },
+            { nome: "Banana Pacovan", codigo: "918" },
+            { nome: "Banana Prata", codigo: "6286" },
+            { nome: "Batata Doce", codigo: "277" },
+            { nome: "Batata Inglesa", codigo: "284" },
+            { nome: "Beringela", codigo: "291" },
+            { nome: "Beterraba", codigo: "307" },
+            { nome: "Caqui", codigo: "7764" },
+            { nome: "Cebola Branca", codigo: "512" },
+            { nome: "Cebola Roxa", codigo: "4909" },
+            { nome: "Cenoura", codigo: "529" },
+            { nome: "Chuchu", codigo: "581" },
+            { nome: "Coco Seco", codigo: "118880" },
+            { nome: "Gengibre", codigo: "3438" },
+            { nome: "Goiaba", codigo: "932" },
+            { nome: "Graviola", codigo: "1946" },
+            { nome: "Inhame", codigo: "1521" },
+            { nome: "Jerimum Caboclo", codigo: "1120" },
+            { nome: "Jerimum Leite", codigo: "1137" },
+            { nome: "Jiló", codigo: "1144" },
+            { nome: "Kiwi", codigo: "871" },
+            { nome: "Laranja Mimo do Céu", codigo: "4619" },
+            { nome: "Laranja Pera", codigo: "253" },
+            { nome: "Limão Tahiti", codigo: "963" },
+            { nome: "Maçã Red Importada", codigo: "4800" },
+            { nome: "Maçã Verde", codigo: "5654" },
+            { nome: "Maçã Nacional", codigo: "970" },
+            { nome: "Macaxeira", codigo: "1342" },
+            { nome: "Mamão Formosa", codigo: "987" },
+            { nome: "Mamão Havaí", codigo: "994" },
+            { nome: "Manga Keite", codigo: "628" },
+            { nome: "Maracujá", codigo: "1007" },
+            { nome: "Maxixe", codigo: "5814" },
+            { nome: "Melancia", codigo: "895" },
+            { nome: "Melancia Baby", codigo: "8273" },
+            { nome: "Melão Espanhol", codigo: "5746" },
+            { nome: "Melão Japonês", codigo: "1014" },
+            { nome: "Melão Português", codigo: "4435" },
+            { nome: "Pepino", codigo: "1847" },
+            { nome: "Pêra", codigo: "1021" },
+            { nome: "Pêra Portuguesa", codigo: "18807" },
+            { nome: "Pimenta de Cheiro", codigo: "9041" },
+            { nome: "Pimentão Verde", codigo: "239" },
+            { nome: "Pimentão Vermelho", codigo: "2431" },
+            { nome: "Pimentão Amarelo", codigo: "2448" },
+            { nome: "Pinha", codigo: "6415" },
+            { nome: "Quiabo", codigo: "2028" },
+            { nome: "Repolho Branco", codigo: "2141" },
+            { nome: "Repolho Roxo", codigo: "5449" },
+            { nome: "Tangerina", codigo: "956" },
+            { nome: "Tangerina Importada", codigo: "19217" },
+            { nome: "Tomate", codigo: "2288" },
+            { nome: "Uva Itália", codigo: "1038" },
+            { nome: "Uva Rubi", codigo: "1052" }
+        ];
+
+        let currentLegume = {};
+        let score = 0;
+        let attempts = 3;
+        let inputCode = "";
+
+        function startGame() {
+            currentLegume = legumes[Math.floor(Math.random() * legumes.length)];
+            document.getElementById("legume").innerText = "Qual o código de: " + currentLegume.nome;
+            inputCode = "";
+            updateDisplay();
+        }
+
+        function addNumber(num) {
+            if (inputCode.length < 6) { // Limitar o código a 6 dígitos
+                inputCode += num;
+                updateDisplay();
+            }
+        }
+
+        function clearDisplay() {
+            inputCode = "";
+            updateDisplay();
+        }
+
+        function deleteLastNumber() {
+            inputCode = inputCode.slice(0, -1);
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            document.getElementById("display").innerText = "Código: " + inputCode;
+        }
+
+        function checkAnswer() {
+            if (inputCode === currentLegume.codigo) {
+                score++;
+                document.getElementById("score").innerText = score;
+                document.getElementById("message").innerText = "Correto!";
+                startGame();
+            } else {
+                attempts--;
+                document.getElementById("attempts").innerText = attempts;
+                document.getElementById("message").innerText = "Errado! O código correto era " + currentLegume.codigo;
+                if (attempts === 0) {
+                    alert("Você perdeu todas as tentativas! Jogo reiniciado.");
+                    score = 0;
+                    attempts = 3;
+                    document.getElementById("score").innerText = score;
+                    document.getElementById("attempts").innerText = attempts;
+                }
+                startGame();
+            }
+        }
+
+        startGame();
+    </script>
+
+</body>
+</html>
